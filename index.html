@@ -1,34 +1,1637 @@
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <title>Mini App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shohruh — Portfolio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════
+   ROOT & RESET
+═══════════════════════════════ */
+:root {
+  --bg: #07080d;
+  --surface: #0d0f18;
+  --card: #111421;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --accent: #b8ff57;
+  --accent-dim: rgba(184,255,87,0.12);
+  --accent2: #ff5f3f;
+  --accent3: #4d9fff;
+  --text: #e8e4dc;
+  --muted: #52596a;
+  --muted2: #8490a0;
+  --nav-h: 60px;
+  --bottom-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; -webkit-tap-highlight-color: transparent; }
 
-    <style>
-        body{
-            background:#0f172a;
-            color:white;
-            font-family:Arial;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:100vh;
-        }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
 
-        h1{
-            font-size:40px;
-        }
-    </style>
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea { font-family: inherit; outline: none; }
+img { display: block; max-width: 100%; }
+
+/* ═══════════════════════════════
+   LAYOUT SHELL
+═══════════════════════════════ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════
+   TOP HEADER
+═══════════════════════════════ */
+.header {
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(7,8,13,0.95);
+  backdrop-filter: blur(20px);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.header-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.header-logo .dot {
+  width: 7px; height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #07080d;
+  font-family: 'Syne', sans-serif;
+  border: 1.5px solid rgba(184,255,87,0.3);
+}
+.header-name {
+  font-size: 0.75rem;
+  color: var(--muted2);
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════
+   SCROLL AREA
+═══════════════════════════════ */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+/* ═══════════════════════════════
+   PAGES
+═══════════════════════════════ */
+.page {
+  display: none;
+  padding: 1.25rem 1.25rem calc(var(--bottom-h) + var(--safe-bottom) + 1rem);
+  min-height: 100%;
+  animation: fadeUp 0.35s ease forwards;
+}
+.page.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════ */
+.bottom-nav {
+  height: calc(var(--bottom-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+  background: rgba(7,8,13,0.97);
+  backdrop-filter: blur(20px);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+  transition: color 0.2s;
+  position: relative;
+}
+.tab-btn svg { transition: transform 0.2s; }
+.tab-btn.active { color: var(--accent); }
+.tab-btn.active svg { transform: translateY(-2px); }
+.tab-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ═══════════════════════════════
+   ── HOME PAGE ──
+═══════════════════════════════ */
+.hero-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 180px; height: 180px;
+  background: radial-gradient(ellipse, rgba(184,255,87,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(184,255,87,0.25);
+  border-radius: 100px;
+  background: rgba(184,255,87,0.06);
+}
+.hero-badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: blink 1.8s infinite;
+}
+
+.hero-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.3rem;
+}
+.hero-name em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-role {
+  font-size: 0.8rem;
+  color: var(--muted2);
+  margin-bottom: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.hero-desc {
+  font-size: 0.76rem;
+  color: var(--muted2);
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.hero-btns {
+  display: flex;
+  gap: 0.6rem;
+}
+.btn-primary {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  background: var(--accent);
+  color: #07080d;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(184,255,87,0.2);
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: none; }
+.btn-outline {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 0.78rem;
+  border-radius: 10px;
+  display: flex; align-items: center; gap: 0.4rem;
+  transition: all 0.2s;
+}
+.btn-outline:active { background: rgba(255,255,255,0.05); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 0.75rem;
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+.stat-num span { color: var(--accent); }
+.stat-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+/* Skills scroll */
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.skills-scroll-wrap {
+  overflow: hidden;
+  margin: 0 -1.25rem;
+  padding: 0 1.25rem;
+  margin-bottom: 1rem;
+}
+.skills-scroll {
+  display: flex;
+  gap: 0.5rem;
+  animation: scrollx 18s linear infinite;
+  width: max-content;
+}
+@keyframes scrollx { to { transform: translateX(-50%); } }
+.skill-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.68rem;
+  color: var(--muted2);
+  white-space: nowrap;
+  background: var(--card);
+  flex-shrink: 0;
+}
+.skill-pill::before {
+  content: '';
+  width: 4px; height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════
+   ── PROJECTS PAGE ──
+═══════════════════════════════ */
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.3rem;
+}
+.page-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+.page-sub {
+  font-size: 0.73rem;
+  color: var(--muted2);
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+
+.filter-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1.1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--muted2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.filter-chip.active {
+  color: var(--accent);
+  border-color: rgba(184,255,87,0.3);
+  background: rgba(184,255,87,0.07);
+}
+.filter-chip:active { transform: scale(0.95); }
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.proj-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 1.1rem 1.1rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.proj-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(184,255,87,0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.proj-card:active { background: #141729; border-color: rgba(184,255,87,0.2); }
+.proj-card:active::after { opacity: 1; }
+
+.proj-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.proj-info { flex: 1; min-width: 0; }
+.proj-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.proj-desc {
+  font-size: 0.71rem;
+  color: var(--muted2);
+  line-height: 1.65;
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.proj-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.tag {
+  font-size: 0.6rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  letter-spacing: 0.03em;
+}
+.tag.hi { border-color: rgba(184,255,87,0.3); color: var(--accent); }
+.proj-arrow {
+  width: 28px; height: 28px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  align-self: center;
+}
+.proj-card:active .proj-arrow {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(184,255,87,0.08);
+}
+
+/* ═══════════════════════════════
+   ── DETAIL PAGE ──
+═══════════════════════════════ */
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--muted2);
+  letter-spacing: 0.04em;
+  margin-bottom: 1.25rem;
+  padding: 0.4rem 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.detail-back:active { color: var(--text); }
+
+.detail-hero-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 1.4rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.detail-hero-card::before {
+  content: '';
+  position: absolute; top: -80px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(ellipse, rgba(184,255,87,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.detail-icon-big {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+.detail-cat {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.detail-title-big {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.75rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.meta-item strong {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+.meta-item span {
+  font-size: 0.75rem;
+  color: var(--text);
+}
+.meta-item .live { color: var(--accent); }
+
+.detail-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+.detail-section h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.detail-section p {
+  font-size: 0.73rem;
+  color: var(--muted2);
+  line-height: 1.85;
+  margin-bottom: 0.5rem;
+}
+.detail-section p:last-child { margin-bottom: 0; }
+
+.detail-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.d-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 0.75rem;
+  text-align: center;
+}
+.d-stat-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.d-stat-label {
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.detail-links {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.link-btn {
+  flex: 1;
+  padding: 0.7rem;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  font-size: 0.72rem;
+  color: var(--text);
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  transition: all 0.2s;
+}
+.link-btn.primary-link {
+  background: var(--accent-dim);
+  border-color: rgba(184,255,87,0.25);
+  color: var(--accent);
+}
+.link-btn:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════
+   ── ABOUT PAGE ──
+═══════════════════════════════ */
+.about-profile {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 1.4rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.about-profile::before {
+  content: '';
+  position: absolute; top: -50px; right: -50px;
+  width: 150px; height: 150px;
+  background: radial-gradient(ellipse, rgba(77,159,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.about-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #07080d;
+  flex-shrink: 0;
+  border: 2px solid rgba(184,255,87,0.3);
+  box-shadow: 0 0 20px rgba(184,255,87,0.15);
+}
+.about-profile-info h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.2rem;
+}
+.about-profile-info p {
+  font-size: 0.72rem;
+  color: var(--muted2);
+  margin-bottom: 0.5rem;
+}
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.about-bio {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+.about-bio p {
+  font-size: 0.74rem;
+  color: var(--muted2);
+  line-height: 1.85;
+  margin-bottom: 0.5rem;
+}
+.about-bio p:last-child { margin-bottom: 0; }
+.about-bio strong { color: var(--text); }
+
+.stack-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+.stack-section h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+.stack-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.stack-item:last-child { margin-bottom: 0; }
+.stack-name {
+  font-size: 0.72rem;
+  color: var(--muted2);
+  width: 75px;
+  flex-shrink: 0;
+}
+.stack-bar-bg {
+  flex: 1;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.stack-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), rgba(184,255,87,0.6));
+  border-radius: 3px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1s cubic-bezier(0.4,0,0.2,1);
+}
+.stack-pct {
+  font-size: 0.65rem;
+  color: var(--muted);
+  width: 30px;
+  text-align: right;
+}
+
+/* ═══════════════════════════════
+   ── AUTH PAGES ──
+═══════════════════════════════ */
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.auth-icon {
+  width: 52px; height: 52px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(184,255,87,0.25);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.4rem;
+}
+.auth-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.3rem;
+}
+.auth-header p {
+  font-size: 0.73rem;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+
+.auth-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 1.4rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.auth-card::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.oauth-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 0.78rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+}
+.oauth-btn:active { background: rgba(255,255,255,0.08); }
+
+.divider {
+  text-align: center;
+  margin: 0 0 1rem;
+  position: relative;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.divider::before, .divider::after {
+  content: '';
+  position: absolute; top: 50%;
+  width: calc(50% - 1.5rem);
+  height: 1px;
+  background: var(--border);
+}
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.form-group { margin-bottom: 1rem; }
+.form-group:last-of-type { margin-bottom: 1.2rem; }
+.form-label {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 0.45rem;
+}
+.form-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  transition: all 0.2s;
+}
+.form-input::placeholder { color: var(--muted); }
+.form-input:focus {
+  border-color: rgba(184,255,87,0.4);
+  background: rgba(184,255,87,0.04);
+  box-shadow: 0 0 0 3px rgba(184,255,87,0.07);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+.form-check {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--muted2);
+  line-height: 1.5;
+  margin-bottom: 1.1rem;
+  cursor: pointer;
+}
+.form-check input { margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+.form-check a { color: var(--accent); }
+
+.btn-full {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--accent);
+  color: #07080d;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  border-radius: 11px;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(184,255,87,0.2);
+}
+.btn-full:active { transform: scale(0.98); box-shadow: none; }
+
+.auth-switch {
+  text-align: center;
+  font-size: 0.73rem;
+  color: var(--muted2);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.auth-switch a { color: var(--accent); cursor: pointer; }
+
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-size: 0.68rem;
+  color: var(--accent);
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+/* progress steps */
+.reg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 1.2rem;
+}
+.step-dot {
+  width: 28px; height: 3px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.step-dot.done { background: var(--accent); }
+
+/* ═══════════════════════════════
+   TOAST
+═══════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: calc(var(--bottom-h) + var(--safe-bottom) + 12px);
+  left: 1rem; right: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font-size: 0.75rem;
+  color: var(--text);
+  display: flex; align-items: center; gap: 0.6rem;
+  z-index: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 1rem; flex-shrink: 0; }
+</style>
 </head>
 <body>
 
-    <h1>Salom Shohruh 🚀</h1>
+<div class="app">
 
-    <script>
-        Telegram.WebApp.expand();
-    </script>
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-logo">
+      SH<span class="dot"></span>HRUH
+    </div>
+    <div class="header-user">
+      <div class="header-avatar" id="tg-avatar">SH</div>
+      <span class="header-name" id="tg-name">Mehmon</span>
+    </div>
+  </header>
 
+  <!-- ═══ SCROLL AREA ═══ -->
+  <div class="scroll-area" id="scroll-area">
+
+    <!-- ──────────────── HOME ──────────────── -->
+    <div class="page active" id="page-home">
+
+      <div class="hero-card">
+        <div class="hero-badge">Mavjud · Ishga tayyor</div>
+        <div class="hero-name">Sho<em>hruh</em></div>
+        <div class="hero-role">Python · Django · Telegram Bot</div>
+        <p class="hero-desc">
+          Backend ilovalar, Telegram botlar va veb dizayn bo'yicha tajribali dasturchi.
+          Har bir loyiha — yangi bir tarix.
+        </p>
+        <div class="hero-btns">
+          <button class="btn-primary" onclick="switchPage('projects')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Loyihalar
+          </button>
+          <button class="btn-outline" onclick="switchPage('about')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            Haqimda
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num">12<span>+</span></div>
+          <div class="stat-label">Loyiha</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">3<span>+</span></div>
+          <div class="stat-label">Yil</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">8<span>+</span></div>
+          <div class="stat-label">Mijoz</div>
+        </div>
+      </div>
+
+      <div class="section-label">Texnologiyalar</div>
+      <div class="skills-scroll-wrap">
+        <div class="skills-scroll">
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">Django</span>
+          <span class="skill-pill">Telegram Bot</span>
+          <span class="skill-pill">PostgreSQL</span>
+          <span class="skill-pill">HTML/CSS</span>
+          <span class="skill-pill">JavaScript</span>
+          <span class="skill-pill">REST API</span>
+          <span class="skill-pill">Redis</span>
+          <span class="skill-pill">Docker</span>
+          <span class="skill-pill">Git</span>
+          <!-- duplicate for loop -->
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">Django</span>
+          <span class="skill-pill">Telegram Bot</span>
+          <span class="skill-pill">PostgreSQL</span>
+          <span class="skill-pill">HTML/CSS</span>
+          <span class="skill-pill">JavaScript</span>
+          <span class="skill-pill">REST API</span>
+          <span class="skill-pill">Redis</span>
+          <span class="skill-pill">Docker</span>
+          <span class="skill-pill">Git</span>
+        </div>
+      </div>
+
+      <div class="section-label">So'nggi ishlar</div>
+      <div class="projects-list" style="gap:0.6rem">
+        <div class="proj-card" onclick="showDetail(0)">
+          <div class="proj-icon">🎬</div>
+          <div class="proj-info">
+            <div class="proj-title">KinoBot</div>
+            <div class="proj-desc">Telegram kino tarqatuvchi bot. 5K+ foydalanuvchi, obuna tekshiruvi.</div>
+            <div class="proj-tags">
+              <span class="tag hi">Python</span>
+              <span class="tag">Telegram</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+        <div class="proj-card" onclick="showDetail(1)">
+          <div class="proj-icon">🍔</div>
+          <div class="proj-info">
+            <div class="proj-title">BurgerHouse</div>
+            <div class="proj-desc">Django restoran admin paneli. Art Deco dizayn.</div>
+            <div class="proj-tags">
+              <span class="tag hi">Django</span>
+              <span class="tag">Python</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ──────────────── PROJECTS ──────────────── -->
+    <div class="page" id="page-projects">
+
+      <div class="page-title">Barcha <em>loyihalar</em></div>
+      <p class="page-sub">Bot, veb ilova, admin panel va SMM loyihalari.</p>
+
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="filterProj(this,'all')">Barchasi</button>
+        <button class="filter-chip" onclick="filterProj(this,'bot')">Telegram Bot</button>
+        <button class="filter-chip" onclick="filterProj(this,'web')">Web / Django</button>
+        <button class="filter-chip" onclick="filterProj(this,'smm')">SMM</button>
+      </div>
+
+      <div class="projects-list" id="proj-list">
+
+        <div class="proj-card" data-cat="bot" onclick="showDetail(0)">
+          <div class="proj-icon">🎬</div>
+          <div class="proj-info">
+            <div class="proj-title">KinoBot</div>
+            <div class="proj-desc">Telegram kino tarqatuvchi bot. Obuna tekshiruvi, copy_message, admin panel, 5K+ foydalanuvchi.</div>
+            <div class="proj-tags">
+              <span class="tag hi">Python</span>
+              <span class="tag">Telegram</span>
+              <span class="tag">PostgreSQL</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+
+        <div class="proj-card" data-cat="web" onclick="showDetail(1)">
+          <div class="proj-icon">🍔</div>
+          <div class="proj-info">
+            <div class="proj-title">BurgerHouse Admin</div>
+            <div class="proj-desc">Django restoran boshqaruv paneli. Art Deco dizayn, buyurtmalar, menyu CRUD.</div>
+            <div class="proj-tags">
+              <span class="tag hi">Django</span>
+              <span class="tag">Python</span>
+              <span class="tag">CSS</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+
+        <div class="proj-card" data-cat="smm" onclick="showDetail(2)">
+          <div class="proj-icon">📢</div>
+          <div class="proj-info">
+            <div class="proj-title">UdarSMM</div>
+            <div class="proj-desc">SMM yo'nalishidagi Telegram kanal. Brending, logotip, kontent strategiyasi.</div>
+            <div class="proj-tags">
+              <span class="tag hi">SMM</span>
+              <span class="tag">Branding</span>
+              <span class="tag">Telegram</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+
+        <div class="proj-card" data-cat="bot" onclick="showDetail(3)">
+          <div class="proj-icon">⚽</div>
+          <div class="proj-info">
+            <div class="proj-title">Vodiy PFK Brending</div>
+            <div class="proj-desc">YouTube kanal banneri va thumbnaillari. Python/Pillow bilan yaratilgan.</div>
+            <div class="proj-tags">
+              <span class="tag hi">Python</span>
+              <span class="tag">Pillow</span>
+              <span class="tag">Design</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+
+        <div class="proj-card" data-cat="web" onclick="showDetail(4)">
+          <div class="proj-icon">🛒</div>
+          <div class="proj-info">
+            <div class="proj-title">APEX SPORT Store</div>
+            <div class="proj-desc">Sport do'kon frontend. Django template uchun tayyor. Dark neon dizayn, cart logic.</div>
+            <div class="proj-tags">
+              <span class="tag hi">HTML/CSS</span>
+              <span class="tag">JS</span>
+              <span class="tag">Django</span>
+            </div>
+          </div>
+          <div class="proj-arrow">→</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ──────────────── DETAIL ──────────────── -->
+    <div class="page" id="page-detail">
+      <!-- Filled dynamically by JS -->
+    </div>
+
+    <!-- ──────────────── ABOUT ──────────────── -->
+    <div class="page" id="page-about">
+
+      <div class="about-profile">
+        <div class="about-avatar">S</div>
+        <div class="about-profile-info">
+          <h2>Shohruh</h2>
+          <p>Full-Stack Developer</p>
+          <div class="location-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4-4-7-8-7-12a7 7 0 1 1 14 0c0 4-3 8-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            Toshkent, O'zbekiston
+          </div>
+        </div>
+      </div>
+
+      <div class="about-bio">
+        <p>Men <strong>Shohruh</strong> — Python va Django asosida veb ilovalar va Telegram botlar yaratuvchi dasturchi. Har bir loyihaga alohida e'tibor bilan yondoshaman.</p>
+        <p>Backend arxitekturadan tortib UI dizayngacha o'z qo'lim bilan ishlayman. <strong>Clean code</strong>, <strong>UX</strong> va <strong>ishlash tezligi</strong> men uchun ustuvor.</p>
+        <p>Hozirda <strong>UdarSMM</strong> Telegram kanalim orqali SMM sohasida ham faoliyat olib boraman.</p>
+      </div>
+
+      <div class="stack-section" id="stack-section">
+        <h3>Texnologiyalar</h3>
+        <div class="stack-item">
+          <span class="stack-name">Python</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="92"></div></div>
+          <span class="stack-pct">92%</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Django</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="85"></div></div>
+          <span class="stack-pct">85%</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Bot API</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="90"></div></div>
+          <span class="stack-pct">90%</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">HTML/CSS</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="78"></div></div>
+          <span class="stack-pct">78%</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">JavaScript</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="65"></div></div>
+          <span class="stack-pct">65%</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">PostgreSQL</span>
+          <div class="stack-bar-bg"><div class="stack-bar" data-w="80"></div></div>
+          <span class="stack-pct">80%</span>
+        </div>
+      </div>
+
+      <div class="detail-section" style="margin-bottom:0.75rem">
+        <h3>Aloqa</h3>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <a href="https://t.me/shohruh" class="link-btn primary-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            Telegram: @shohruh
+          </a>
+          <a href="https://github.com/shohruh" class="link-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ──────────────── LOGIN ──────────────── -->
+    <div class="page" id="page-login">
+      <div class="auth-header">
+        <div class="auth-icon">👋</div>
+        <h2>Xush kelibsiz</h2>
+        <p>Akkauntingizga kirish uchun ma'lumotlaringizni kiriting.</p>
+      </div>
+      <div class="auth-card">
+        <button class="oauth-btn" onclick="showToast('✓','Google bilan kirildi!')">
+          <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google bilan kirish
+        </button>
+        <div class="divider">yoki</div>
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="sizning@email.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parol</label>
+            <input type="password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <span class="forgot-link">Parolni unutdingizmi?</span>
+          <button type="submit" class="btn-full">Kirish</button>
+        </form>
+        <div class="auth-switch">
+          Akkauntingiz yo'qmi? <a onclick="switchPage('register')">Ro'yxatdan o'ting</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────── REGISTER ──────────────── -->
+    <div class="page" id="page-register">
+      <div class="auth-header">
+        <div class="auth-icon">🚀</div>
+        <h2>Akkaunt yarating</h2>
+        <p>Portfolio va loyihalarga to'liq kirish uchun ro'yxatdan o'ting.</p>
+      </div>
+      <div class="reg-steps">
+        <div class="step-dot done" id="step1"></div>
+        <div class="step-dot" id="step2"></div>
+        <div class="step-dot" id="step3"></div>
+      </div>
+      <div class="auth-card">
+        <form onsubmit="handleRegister(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Ism</label>
+              <input type="text" class="form-input" placeholder="Shohruh" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Familiya</label>
+              <input type="text" class="form-input" placeholder="K." required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" placeholder="@username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="sizning@email.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parol</label>
+            <input type="password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parolni tasdiqlang</label>
+            <input type="password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <label class="form-check">
+            <input type="checkbox" required>
+            <span>Foydalanish shartlari va Maxfiylik siyosatiga roziman</span>
+          </label>
+          <button type="submit" class="btn-full">Akkaunt yaratish →</button>
+        </form>
+        <div class="auth-switch">
+          Akkauntingiz bormi? <a onclick="switchPage('login')">Kiring</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav class="bottom-nav">
+    <button class="tab-btn active" id="tab-home" onclick="switchPage('home')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      Asosiy
+    </button>
+    <button class="tab-btn" id="tab-projects" onclick="switchPage('projects')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Loyihalar
+    </button>
+    <button class="tab-btn" id="tab-about" onclick="switchPage('about')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Haqimda
+    </button>
+    <button class="tab-btn" id="tab-login" onclick="switchPage('login')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Kirish
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-msg">Xabar</span>
+</div>
+
+<script>
+/* ═══════════════════════════
+   TELEGRAM MINI APP INIT
+═══════════════════════════ */
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.enableClosingConfirmation();
+
+  const user = tg.initDataUnsafe?.user;
+  if (user) {
+    const name = user.first_name || 'Foydalanuvchi';
+    document.getElementById('tg-name').textContent = name;
+    document.getElementById('tg-avatar').textContent = name[0].toUpperCase();
+  }
+}
+
+/* ═══════════════════════════
+   PROJECT DATA
+═══════════════════════════ */
+const PROJECTS = [
+  {
+    id: 0, cat: 'bot', icon: '🎬', name: 'KinoBot',
+    catLabel: 'Telegram Bot',
+    desc: 'Telegram orqali kino tarqatuvchi bot. Foydalanuvchilar kino kodi yuborib, darhol kino oladi.',
+    year: '2024', status: '● Faol', users: '5,000+',
+    tech: ['Python', 'pyTelegramBotAPI', 'PostgreSQL', 'Redis', 'Linux VPS'],
+    stats: [{ n:'5K+', l:'Foydalanuvchi' }, { n:'500+', l:'Film' }, { n:'99%', l:'Uptime' }],
+    features: [
+      { t:'Yashirin manba', d:'copy_message orqali forward qilingan kino manba kanalini ko\'rsatmaydi. Bu foydalanuvchi tajribasini yaxshilaydi.' },
+      { t:'Obuna tekshiruvi', d:'Foydalanuvchilar bot xizmatlaridan foydalanish uchun belgilangan kanal/guruhlarga obuna bo\'lishi kerak. Public va private guruhlar ham qo\'llab-quvvatlanadi.' },
+      { t:'safe_edit() helper', d:'"message is not modified" Telegram API xatosini bartaraf etish uchun maxsus yordamchi funksiya.' },
+    ],
+    github: '#', demo: '#'
+  },
+  {
+    id: 1, cat: 'web', icon: '🍔', name: 'BurgerHouse Admin',
+    catLabel: 'Web / Django',
+    desc: 'Django asosidagi restoran boshqaruv paneli. Buyurtmalar, menyu va foydalanuvchi boshqaruvi.',
+    year: '2025', status: '● Faol', users: 'Xususiy',
+    tech: ['Django', 'Python', 'PostgreSQL', 'CSS Art Deco'],
+    stats: [{ n:'100+', l:'Buyurtma/kun' }, { n:'50+', l:'Menyu item' }, { n:'5', l:'Admin' }],
+    features: [
+      { t:'Art Deco dizayn', d:'Login sahifasi va panel geometric Art Deco uslubida, orange/dark rang sxemasi bilan.' },
+      { t:'To\'liq CRUD', d:'Menyu, buyurtmalar, foydalanuvchilar uchun to\'liq Create/Read/Update/Delete.' },
+      { t:'Statistika', d:'Kunlik/oylik buyurtmalar grafigi, eng ko\'p buyurtma berilgan mahsulotlar.' },
+    ],
+    github: '#', demo: '#'
+  },
+  {
+    id: 2, cat: 'smm', icon: '📢', name: 'UdarSMM',
+    catLabel: 'SMM / Brending',
+    desc: 'SMM yo\'nalishidagi Telegram kanal. Brending, logotip va kontent strategiyasi.',
+    year: '2024', status: '● Faol', users: '1,200+',
+    tech: ['Python/Pillow', 'Canva', 'Telegram', 'Branding'],
+    stats: [{ n:'1.2K+', l:'Obunachilar' }, { n:'40+', l:'Post/oy' }, { n:'8%', l:'ER' }],
+    features: [
+      { t:'Logotip dizayn', d:'Python/Pillow yordamida dark blue-black va gold/cyan/pink rang sxemasida logotip yaratildi. Instagram uchun 1000×1000px optimallashtirilgan.' },
+      { t:'Kontent strategiya', d:'Har kuni 1-2 ta post: SMM trendi, case study, amaliy maslahatlar.' },
+      { t:'Telegram kanal', d:'Kanalda interaktiv so\'rovnomalar, dizayn templatelar va case studylar.' },
+    ],
+    github: null, demo: 'https://t.me/UdarSMM'
+  },
+  {
+    id: 3, cat: 'bot', icon: '⚽', name: 'Vodiy PFK Brending',
+    catLabel: 'Dizayn / Python',
+    desc: 'Vodiy PFK futbol klubi uchun YouTube kanal brending assetlari.',
+    year: '2025', status: '● Tayyor', users: 'Kliyent',
+    tech: ['Python', 'Pillow', 'Design', 'YouTube'],
+    stats: [{ n:'10+', l:'Banner' }, { n:'20+', l:'Thumbnail' }, { n:'2', l:'Variant' }],
+    features: [
+      { t:'YouTube banner', d:'Klub ranglari va logotipi asosida professional YouTube kanal banneri. Python/Pillow bilan iterativ dizayn.' },
+      { t:'Thumbnail shablonlar', d:'Har bir o\'yin va yangilik uchun thumbnail shabloni. Tez to\'ldirish imkoniyati.' },
+      { t:'Brand style guide', d:'Rang palitra, font, va kompozitsiya bo\'yicha qo\'llanma.' },
+    ],
+    github: null, demo: null
+  },
+  {
+    id: 4, cat: 'web', icon: '🛒', name: 'APEX SPORT Store',
+    catLabel: 'Frontend / Django',
+    desc: 'Sport do\'kon frontend. Django template integratsiyasi uchun tayyor. Dark neon uslub.',
+    year: '2025', status: '● Tayyor', users: 'Django template',
+    tech: ['HTML', 'CSS', 'JavaScript', 'Django templates'],
+    stats: [{ n:'15+', l:'Sahifa' }, { n:'UZS', l:'Valyuta' }, { n:'100%', l:'Responsive' }],
+    features: [
+      { t:'Dark neon uslub', d:'Qora fon, neon yashil/ko\'k aksentlar. Sport estetikasiga mos zamonaviy dizayn.' },
+      { t:'Cart logic', d:'localStorage asosidagi savat tizimi. Mahsulot qo\'shish, o\'chirish, miqdor o\'zgartirish.' },
+      { t:'Django tayyor', d:'Barcha HTML Django template tagidir: {% block %}, {% url %}, {{ product }} bilan mos.' },
+    ],
+    github: '#', demo: '#'
+  }
+];
+
+/* ═══════════════════════════
+   SPA NAVIGATION
+═══════════════════════════ */
+let currentPage = 'home';
+const tabs = ['home','projects','about','login'];
+
+function switchPage(name) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Remove active from all tabs
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+  document.getElementById('page-'+name)?.classList.add('active');
+  document.getElementById('tab-'+name)?.classList.add('active');
+  currentPage = name;
+
+  // Scroll to top
+  document.getElementById('scroll-area').scrollTop = 0;
+
+  // Animate stack bars when about page opens
+  if (name === 'about') {
+    setTimeout(animateBars, 300);
+  }
+
+  // Telegram back button
+  if (tg) {
+    if (name === 'home') tg.BackButton.hide();
+    else {
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => switchPage('home'));
+    }
+  }
+}
+
+function showDetail(id) {
+  const p = PROJECTS[id];
+  const page = document.getElementById('page-detail');
+  page.innerHTML = `
+    <div class="detail-back" onclick="switchPage('${currentPage === 'detail' ? 'projects' : currentPage}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Orqaga
+    </div>
+
+    <div class="detail-hero-card">
+      <div class="detail-icon-big">${p.icon}</div>
+      <div class="detail-cat">${p.catLabel}</div>
+      <div class="detail-title-big">${p.name}</div>
+      <div class="proj-tags">
+        ${p.tech.map((t,i) => `<span class="tag ${i===0?'hi':''}">${t}</span>`).join('')}
+      </div>
+      <div class="detail-meta-grid">
+        <div class="meta-item"><strong>Yil</strong><span>${p.year}</span></div>
+        <div class="meta-item"><strong>Holat</strong><span class="live">${p.status}</span></div>
+        <div class="meta-item"><strong>Foydalanuvchilar</strong><span>${p.users}</span></div>
+        <div class="meta-item"><strong>Kategoriya</strong><span>${p.catLabel}</span></div>
+      </div>
+    </div>
+
+    <div class="detail-stats">
+      ${p.stats.map(s => `
+        <div class="d-stat">
+          <div class="d-stat-num">${s.n}</div>
+          <div class="d-stat-label">${s.l}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="detail-links">
+      ${p.demo ? `<a href="${p.demo}" class="link-btn primary-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+        Demo
+      </a>` : ''}
+      ${p.github ? `<a href="${p.github}" class="link-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>` : ''}
+    </div>
+
+    ${p.features.map(f => `
+      <div class="detail-section">
+        <h3>${f.t}</h3>
+        <p>${f.d}</p>
+      </div>
+    `).join('')}
+  `;
+
+  switchPage('detail');
+
+  if (tg) {
+    tg.BackButton.show();
+    tg.BackButton.onClick(() => switchPage('projects'));
+  }
+}
+
+/* ═══════════════════════════
+   FILTER
+═══════════════════════════ */
+function filterProj(btn, cat) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#proj-list .proj-card').forEach(card => {
+    const show = cat === 'all' || card.dataset.cat === cat;
+    card.style.display = show ? '' : 'none';
+    if (show) card.style.animation = 'fadeUp 0.35s ease forwards';
+  });
+}
+
+/* ═══════════════════════════
+   FORMS
+═══════════════════════════ */
+function handleLogin(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-full');
+  btn.textContent = 'Tekshirilmoqda...';
+  btn.style.opacity = '0.7';
+  setTimeout(() => {
+    btn.textContent = '✓ Muvaffaqiyatli!';
+    btn.style.background = '#4caf7d';
+    showToast('✓','Tizimga muvaffaqiyatli kirdingiz!');
+    setTimeout(() => switchPage('home'), 900);
+  }, 1100);
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-full');
+  btn.textContent = 'Yaratilmoqda...';
+  btn.style.opacity = '0.7';
+  document.getElementById('step2').classList.add('done');
+  setTimeout(() => {
+    document.getElementById('step3').classList.add('done');
+    btn.textContent = '✓ Akkaunt yaratildi!';
+    btn.style.background = '#4caf7d';
+    showToast('🚀','Xush kelibsiz! Akkaunt muvaffaqiyatli yaratildi.');
+    setTimeout(() => switchPage('home'), 1000);
+  }, 1300);
+}
+
+/* ═══════════════════════════
+   TOAST
+═══════════════════════════ */
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  if (tg) tg.HapticFeedback?.notificationOccurred('success');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ═══════════════════════════
+   STACK BARS ANIMATION
+═══════════════════════════ */
+function animateBars() {
+  document.querySelectorAll('.stack-bar').forEach(bar => {
+    const w = bar.dataset.w;
+    bar.style.transform = `scaleX(${w/100})`;
+  });
+}
+
+/* ═══════════════════════════
+   INIT
+═══════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Telegram theme colors
+  if (tg) {
+    document.documentElement.style.setProperty('--bg', tg.themeParams.bg_color || '#07080d');
+  }
+
+  // Haptic feedback on tab press
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tg?.HapticFeedback?.selectionChanged();
+    });
+  });
+});
+</script>
 </body>
 </html>
